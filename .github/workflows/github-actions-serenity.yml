@@ -1,0 +1,40 @@
+name: Ejecutar pruebas Serenity BDD
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  run-serenity-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Configurar JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Configurar Gradle Cache
+        uses: gradle/gradle-build-action@v3
+
+      - name: Ejecutar pruebas con Gradle
+        run: ./gradlew clean test
+        env:
+          GRADLE_OPTS: '-Xmx1024m'
+
+      - name: Comprimir reporte Serenity
+        run: zip -r SerenityReports.zip target/site/serenity
+
+      - name: Subir reporte como artefacto
+        uses: actions/upload-artifact@v4
+        with:
+          name: SerenityReports
+          path: SerenityReports.zip
