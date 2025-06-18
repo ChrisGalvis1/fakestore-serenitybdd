@@ -25,6 +25,9 @@ jobs:
       - name: Configurar Gradle Cache
         uses: gradle/gradle-build-action@v3
 
+      - name: Dar permisos a gradlew
+        run: chmod +x gradlew
+
       - name: Ejecutar pruebas con Gradle
         run: ./gradlew clean test
         env:
