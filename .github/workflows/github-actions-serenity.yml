@@ -29,16 +29,33 @@ jobs:
       - name: Dar permisos a gradlew
         run: chmod +x gradlew
 
+      - name: Verificar conectividad a fakestoreapi.com
+        run: curl -I https://fakestoreapi.com/products || true
+
       - name: Ejecutar pruebas con Gradle
-        run: ./gradlew clean test
+        run: ./gradlew clean test --info
         env:
           GRADLE_OPTS: '-Xmx1024m'
+
+      - name: Mostrar errores si fallan las pruebas
+        if: failure()
+        run: |
+          echo "==== CONTENIDO DE TEST REPORT ===="
+          cat build/reports/tests/test/index.html || echo "No se pudo leer el reporte HTML"
+          echo "==== FIN DE REPORTE ===="
 
       - name: Comprimir reporte Serenity
         run: zip -r SerenityReports.zip target/site/serenity
 
-      - name: Subir reporte como artefacto
+      - name: Subir reporte Serenity como artefacto
         uses: actions/upload-artifact@v4
         with:
           name: SerenityReports
           path: SerenityReports.zip
+
+      - name: Subir reporte de fallos de tests
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: TestReport
+          path: build/reports/tests
